@@ -100,6 +100,11 @@ export const PeakLabels = ({ map, peaks, selectedId, onSelect }: Props) => {
                 clientY: event.clientY,
                 button: event.button,
                 buttons: event.buttons,
+                // Uten modifikatorene ville Cmd + dra fra et fjellnavn panorert
+                // i stedet for å rotere.
+                metaKey: event.metaKey,
+                ctrlKey: event.ctrlKey,
+                shiftKey: event.shiftKey,
                 bubbles: true,
                 cancelable: true,
             }),

@@ -5,6 +5,7 @@ import type {
     MapMouseEvent,
 } from "maplibre-gl";
 import { useEffect, useRef } from "react";
+import { useDragRotate } from "../hooks/useDragRotate";
 import { useMapLibre } from "../hooks/useMapLibre";
 import { TERRAIN_SOURCE, type BaseLayer } from "../lib/mapStyle";
 import type { NamedPeak } from "../lib/peaks";
@@ -162,6 +163,7 @@ export const MapView = ({
     onMapReady,
 }: Props) => {
     const { containerRef, mapRef, map, ready, contextLost } = useMapLibre(initialView, baseLayer);
+    useDragRotate(map);
     const peaksRef = useRef(peaks);
     useEffect(() => {
         peaksRef.current = peaks;
