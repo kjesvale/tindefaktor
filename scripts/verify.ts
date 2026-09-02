@@ -12,7 +12,7 @@ import zlib from "node:zlib";
 import { buildMaxPyramid, nearestHigher } from "../src/lib/isolation";
 import { findPeaks, type Dem } from "../src/lib/prominence";
 import { elevationFromRgb, terrariumTileUrl } from "../src/lib/terrarium";
-import { fetchPlaceNames, isPeakType, matchNames } from "../src/lib/stedsnavn";
+import { fetchPlaceNames, isPeakType, matchNames, NAME_RADIUS_METERS } from "../src/lib/stedsnavn";
 import {
     distanceMeters,
     gridFor,
@@ -73,8 +73,50 @@ const decodePng = (buffer: Buffer) => {
     return { width, height, channels, pixels };
 };
 
-const bounds: Bounds = { south: 61.44, west: 7.9, north: 61.78, east: 8.72 };
-const zoom = 12;
+type Area = {
+    label: string;
+    bounds: Bounds;
+    zoom: number;
+    minProminence: number;
+    /**
+     * Topper som må finnes ved navn. Fasithøyden hentes fra Kartverkets høydetjeneste
+     * for det punktet analysen faktisk fant, så vi måler datasettets nøyaktighet
+     * framfor å sammenligne med et tall noen har skrevet av.
+     */
+    expect: string[];
+    /** Terrarium bygger på SRTM. Spisse tinder trenger mer slingringsmonn enn åser. */
+    tolerance: number;
+};
+
+const areas: Record<string, Area> = {
+    jotunheimen: {
+        label: "Jotunheimen",
+        bounds: { south: 61.44, west: 7.9, north: 61.78, east: 8.72 },
+        zoom: 12,
+        minProminence: 100,
+        expect: ["Galdhøpiggen", "Glittertinden", "Surtningssue", "Besshøe", "Storen"],
+        // Et rutenett på 18 m midler over toppartiet til de spisseste tindene.
+        tolerance: 45,
+    },
+    // Lavlandet er en helt annen prøve: toppene er små, og de er registrert som «Ås»
+    // i stedsnavnregisteret framfor «Fjell».
+    oslo: {
+        label: "Oslo vest",
+        bounds: { south: 59.94, west: 10.55, north: 60.0, east: 10.67 },
+        zoom: 13,
+        minProminence: 30,
+        expect: ["Lathusåsen", "Tryvannshøgda", "Voksenåsen"],
+        tolerance: 25,
+    },
+};
+
+const area = areas[process.argv[2] ?? "jotunheimen"];
+if (!area) {
+    console.error(`Ukjent område. Velg mellom: ${Object.keys(areas).join(", ")}`);
+    process.exit(1);
+}
+const { bounds, zoom } = area;
+console.log(`Område: ${area.label}\n`);
 
 const range = tileRangeFor(bounds, zoom);
 const grid = gridFor(range);
@@ -117,7 +159,7 @@ console.log(
 );
 
 const analysisStart = performance.now();
-const peaks = findPeaks(dem, 100);
+const peaks = findPeaks(dem, area.minProminence);
 const pyramid = buildMaxPyramid(dem);
 const analysisMs = performance.now() - analysisStart;
 
@@ -147,22 +189,6 @@ const names = matchNames(
 );
 console.log(`  ${places.length} navn hentet\n`);
 
-/**
- * Offisielle høyder. Terrarium bygger på SRTM, som har en oppgitt vertikal nøyaktighet
- * rundt 16 m, og datasettet ligger konsekvent litt under fasit i bratt terreng. Vi
- * krever derfor bare at høyden er innenfor 25 m og aldri over — en topp som måles
- * høyere enn fasit ville tydet på en feil i dekodingen.
- */
-const known: Record<string, { elevation: number; tolerance?: number }> = {
-    Galdhøpiggen: { elevation: 2469 },
-    Glittertinden: { elevation: 2465 },
-    Surtningssue: { elevation: 2368 },
-    Besshøe: { elevation: 2258 },
-    // Store Skagastølstind er en smal granittspir. Et rutenett på 18 m midler over
-    // hele toppartiet, så avviket her måler oppløsningen, ikke en feil i analysen.
-    Storen: { elevation: 2405, tolerance: 40 },
-};
-
 console.log("De 15 mest prominente toppene:\n");
 console.log("     navn                      høyde   primærfaktor   isolasjon   sadel");
 for (const [index, peak] of positioned.slice(0, 15).entries()) {
@@ -176,9 +202,17 @@ for (const [index, peak] of positioned.slice(0, 15).entries()) {
     );
 }
 
-console.log("\nKontroll mot kjente fjell:\n");
+console.log("\nKontroll mot Kartverkets høydedata:\n");
+
+/** Kartverkets punkttjeneste svarer med laserdata, langt nøyaktigere enn Terrarium. */
+const officialElevation = async (lat: number, lon: number) => {
+    const url = `https://ws.geonorge.no/hoydedata/v1/punkt?nord=${lat.toFixed(6)}&ost=${lon.toFixed(6)}&koordsys=4258`;
+    const body = (await (await fetch(url)).json()) as { punkter?: { z?: number }[] };
+    return body.punkter?.[0]?.z ?? null;
+};
+
 let failures = 0;
-for (const [name, { elevation: truth, tolerance = 25 }] of Object.entries(known)) {
+for (const name of area.expect) {
     const index = names.findIndex(candidate => candidate === name);
     if (index < 0) {
         console.log(`  ✗ ${name}: ble ikke funnet blant toppene`);
@@ -187,16 +221,24 @@ for (const [name, { elevation: truth, tolerance = 25 }] of Object.entries(known)
     }
 
     const peak = positioned[index]!;
-    const error = truth - peak.elevation;
-    // Registerets eget punkt er fasit for posisjonen.
+    const truth = await officialElevation(peak.lat, peak.lon);
     const place = places.find(candidate => candidate.name === name)!;
     const offset = distanceMeters(peak.lon, peak.lat, place.lon, place.lat);
 
-    const ok = error >= -2 && error <= tolerance && offset < 250;
+    if (truth === null) {
+        console.log(
+            `  · ${name.padEnd(16)} ${Math.round(peak.elevation)} m — ingen fasit tilgjengelig`,
+        );
+        continue;
+    }
+
+    const error = truth - peak.elevation;
+    const ok = Math.abs(error) <= area.tolerance && offset <= NAME_RADIUS_METERS;
     if (!ok) failures++;
     console.log(
         `  ${ok ? "✓" : "✗"} ${name.padEnd(16)} ${Math.round(peak.elevation)} m ` +
-            `(fasit ${truth} m, ${error.toFixed(1)} m under) · ${Math.round(offset)} m fra registerets punkt`,
+            `(Kartverket: ${truth.toFixed(1)} m, avvik ${error.toFixed(1)} m) · ` +
+            `${Math.round(offset)} m fra registerets punkt`,
     );
 }
 

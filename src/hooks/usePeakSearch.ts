@@ -7,7 +7,13 @@
 import { useCallback, useEffect, useReducer, useRef } from "react";
 import type { FromWorker, SearchRequest, SearchStage } from "../lib/messages";
 import { peakId, type NamedPeak } from "../lib/peaks";
-import { fetchPlaceNames, isPeakType, isSaddleType, matchNames } from "../lib/stedsnavn";
+import {
+    fetchPlaceNames,
+    isPeakType,
+    isSaddleType,
+    matchNames,
+    NAME_RADIUS_METERS,
+} from "../lib/stedsnavn";
 import type { Bounds } from "../lib/tiles";
 
 /**
@@ -21,9 +27,6 @@ export const BOUNDS_MARGIN = 0.5;
 
 /** Grovfilter i workeren. Slidere under denne verdien ville uansett gitt mest støy. */
 export const WORKER_MIN_PROMINENCE = 15;
-
-/** Hvor nær et registrert stedsnavn må ligge for å høre til toppen. */
-const NAME_RADIUS_METERS = 400;
 
 export type SearchStatus = "idle" | "running" | "done" | "error";
 

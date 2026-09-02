@@ -33,12 +33,27 @@
     font-weight: 600;
 }
 
+/*
+ * Lista scroller for seg selv med et tak på høyden. Uten taket ville en liste på
+ * hundre topper skjøvet eksportknappene langt utenfor skjermen.
+ */
 .list {
+    max-height: min(46vh, 30rem);
     overflow-y: auto;
     margin: 0;
     padding: 0;
     list-style: none;
-    min-height: 0;
+    overscroll-behavior: contain;
+}
+
+/*
+ * I liggende panel under kartet er det bare drøyt halve skjermen å gå på, og da må
+ * lista gi fra seg plass så eksportknappene ikke havner langt nede i en rulling.
+ */
+@media (max-width: 720px) {
+    .list {
+        max-height: 14rem;
+    }
 }
 
 .row {

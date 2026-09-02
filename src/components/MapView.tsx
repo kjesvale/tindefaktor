@@ -1,4 +1,9 @@
-import type { GeoJSONSource, MapLibreMap, MapMouseEvent } from "maplibre-gl";
+import type {
+    DataDrivenPropertyValueSpecification,
+    GeoJSONSource,
+    MapLibreMap,
+    MapMouseEvent,
+} from "maplibre-gl";
 import { useEffect, useRef } from "react";
 import { useMapLibre } from "../hooks/useMapLibre";
 import { TERRAIN_SOURCE, type BaseLayer } from "../lib/mapStyle";
@@ -62,8 +67,8 @@ const addLayers = (map: MapLibreMap) => {
         source: SADDLE_SOURCE,
         filter: ["==", ["geometry-type"], "LineString"],
         paint: {
-            "line-color": "#c2410c",
-            "line-width": 2,
+            "line-color": "#b4340a",
+            "line-width": 2.5,
             "line-dasharray": [2, 1.5],
         },
     });
@@ -80,29 +85,45 @@ const addLayers = (map: MapLibreMap) => {
         },
     });
 
+    // Kartverkets kart er lyst og fargerikt, så prikkene trenger en hvit glorie for å
+    // ikke drukne i skog, snø og koter. Glorien ligger i et eget lag under punktet.
+    const radius: DataDrivenPropertyValueSpecification<number> = [
+        "interpolate",
+        ["linear"],
+        ["get", "prominence"],
+        0,
+        4,
+        300,
+        6.5,
+        900,
+        9,
+        2000,
+        12,
+    ];
+
+    map.addLayer({
+        id: "topp-glorie",
+        type: "circle",
+        source: PEAK_SOURCE,
+        paint: {
+            "circle-radius": ["+", radius, 2.5],
+            "circle-color": "#ffffff",
+            "circle-opacity": 0.85,
+            "circle-blur": 0.25,
+        },
+    });
+
     map.addLayer({
         id: "topp-punkt",
         type: "circle",
         source: PEAK_SOURCE,
         paint: {
             // Størrelsen leser primærfaktoren direkte, så de store fjellene skiller seg ut.
-            "circle-radius": [
-                "interpolate",
-                ["linear"],
-                ["get", "prominence"],
-                0,
-                3,
-                300,
-                5.5,
-                900,
-                8,
-                2000,
-                11,
-            ],
-            "circle-color": ["case", ["get", "bounded"], "#1d4ed8", "#64748b"],
-            "circle-stroke-width": 1.5,
+            "circle-radius": radius,
+            "circle-color": ["case", ["get", "bounded"], "#0b1f3a", "#5b6b82"],
+            "circle-stroke-width": 2,
             "circle-stroke-color": "#ffffff",
-            "circle-opacity": 0.92,
+            "circle-opacity": 1,
         },
     });
     map.addLayer({
@@ -111,9 +132,9 @@ const addLayers = (map: MapLibreMap) => {
         source: PEAK_SOURCE,
         filter: ["==", ["get", "id"], ""],
         paint: {
-            "circle-radius": 12,
-            "circle-color": "#f97316",
-            "circle-stroke-width": 2.5,
+            "circle-radius": ["+", radius, 4],
+            "circle-color": "#e8590c",
+            "circle-stroke-width": 3,
             "circle-stroke-color": "#ffffff",
         },
     });

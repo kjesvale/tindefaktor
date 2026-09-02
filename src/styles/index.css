@@ -17,11 +17,16 @@
     --accent-soft: hsl(222 76% 96%);
     --on-accent: hsl(0 0% 100%);
 
+    /* Hovedknappen er grafitt framfor blå: den skal bære vekt uten å rope. */
+    --graphite: hsl(215 22% 21%);
+    --graphite-hover: hsl(215 24% 15%);
+    --on-graphite: hsl(210 24% 96%);
+
     --warning: hsl(24 88% 44%);
     --warning-soft: hsl(24 90% 96%);
 
-    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --sans: "Archivo", system-ui, -apple-system, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
 
     --radius: 10px;
     --radius-small: 6px;
@@ -52,6 +57,10 @@
         --warning-soft: hsl(24 30% 22%);
 
         --shadow: 0 1px 2px hsl(0 0% 0% / 30%), 0 6px 16px hsl(0 0% 0% / 24%);
+
+        --graphite: hsl(213 30% 82%);
+        --graphite-hover: hsl(210 32% 90%);
+        --on-graphite: hsl(215 30% 12%);
     }
 }
 

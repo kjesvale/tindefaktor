@@ -40,10 +40,13 @@ Tre ting må gjøres riktig, og alle tre er dekket av tester:
 
 ### Hva tallene tåler
 
-Høydedataene bygger på SRTM med rundt 30 m oppløsning, og ligger typisk 7–16 m under
-offisielle høyder. Spisse tinder rammes hardest — Store Skagastølstind måles 33 m for
-lavt fordi rutenettet midler over hele toppartiet. Primærfaktor er en _differanse_
-mellom to høyder, så en jevn skjevhet i datasettet forsvinner i regnestykket.
+Høydedataene bygger på SRTM med rundt 30 m oppløsning. Målt mot Kartverkets laserdata
+i samme punkt treffer de bedre enn ryktet skulle tilsi — Surtningssue på 0,1 m,
+Voksenåsen på 0,7 m, Lathusåsen på 1,9 m. Spisse tinder rammes hardest, fordi
+rutenettet midler over hele toppartiet: Store Skagastølstind kommer ut 16 m for lavt.
+
+Primærfaktor er dessuten en _differanse_ mellom to høyder, så en jevn skjevhet i
+datasettet forsvinner i regnestykket.
 
 Topper merket med **~** har en primærfaktor som er et estimat: sadelen ble ikke funnet
 innenfor det analyserte området. Zoom ut og søk på nytt for et sikrere tall.
@@ -64,18 +67,31 @@ lastet ned, så de koster ingen ekstra nedlasting.
 
 ## Kommandoer
 
-| Kommando         | Beskrivelse                                                                     |
-| ---------------- | ------------------------------------------------------------------------------- |
-| `bun run dev`    | Utviklingsserver                                                                |
-| `bun run build`  | Typesjekk og produksjonsbygg                                                    |
-| `bun test`       | Enhetstester                                                                    |
-| `bun run verify` | Kjører analysen mot ekte høydedata over Jotunheimen og sjekker mot kjente fjell |
-| `bun run lint`   | Oxlint                                                                          |
-| `bun run format` | Prettier                                                                        |
+| Kommando         | Beskrivelse                                                         |
+| ---------------- | ------------------------------------------------------------------- |
+| `bun run dev`    | Utviklingsserver                                                    |
+| `bun run build`  | Typesjekk og produksjonsbygg                                        |
+| `bun test`       | Enhetstester                                                        |
+| `bun run verify` | Kjører analysen mot ekte høydedata og sjekker mot Kartverkets fasit |
+| `bun run lint`   | Oxlint                                                              |
+| `bun run format` | Prettier                                                            |
 
 `bun run verify` er integrasjonstesten: den laster ekte fliser, kjører hele kjeden og
-kontrollerer at Galdhøpiggen, Glittertinden, Surtningssue, Besshøe og Storen kommer ut
-med riktig navn, høyde og posisjon — og at ingen topp bryter invariantene.
+kontrollerer at kjente fjell kommer ut med riktig navn og posisjon — og at ingen topp
+bryter invariantene. Fasithøydene hentes fra Kartverkets høydetjeneste for det punktet
+analysen faktisk fant, så testen måler datasettets nøyaktighet framfor å sammenligne
+med tall noen har skrevet av.
+
+To områder dekkes, fordi de stiller helt ulike krav:
+
+```
+bun run verify jotunheimen   # høyfjell: Galdhøpiggen, Glittertinden, Storen
+bun run verify oslo          # lavland: Lathusåsen, Tryvannshøgda, Voksenåsen
+```
+
+Lavlandet er den strengeste prøven på navnematchingen. Toppene der er registrert som
+«Ås», ikke «Fjell», og et søkepunkt i Oslo gir over 500 treff der fjellnavnene havner
+på side to.
 
 ## Teknologi
 

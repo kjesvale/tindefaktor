@@ -31,11 +31,29 @@ export type PlaceName = {
 
 export type NamedPoint = { lon: number; lat: number };
 
-/** Navneobjekttyper som beskriver en fjelltopp. */
-const PEAK_TYPES = new Set(["Fjell", "Topp", "Berg", "Haug", "Fjellside", "Nut", "Pigg"]);
+/**
+ * Navneobjekttyper som beskriver en topp man kan stå på, hentet fra registerets egen
+ * liste over 291 typer.
+ *
+ * `Ås` er den viktigste og lettest å overse: i høyfjellet dominerer `Fjell`, men i
+ * lavlandet er nesten alle topper registrert som `Ås`. Over et utsnitt av Oslo vest
+ * firedoblet den antallet navn — 172 av 234 traff nettopp den typen.
+ *
+ * Avlange landskapsformer som `Rygg`, `Egg` og `Hei` holdes utenfor: de navngir en
+ * strekning, ikke et punkt, og representasjonspunktet kan ligge hvor som helst langs
+ * den. `Nes` er en landtunge ut i vann og hører ikke hjemme her i det hele tatt.
+ */
+const PEAK_TYPES = new Set(["Fjell", "Topp", "Berg", "Haug", "Ås", "Høyde"]);
 
 /** Navneobjekttyper som beskriver et skar eller en sadel mellom to topper. */
-const SADDLE_TYPES = new Set(["Skar", "Sadel", "Bandet", "Eid"]);
+const SADDLE_TYPES = new Set(["Skar", "Eid", "Fjellovergang"]);
+
+/**
+ * Hvor nær et registrert navn må ligge for å høre til en topp. Punktet i registeret
+ * er et representasjonspunkt, ikke nødvendigvis selve toppunktet — for en ås som
+ * dekker et stort område kan de ligge et par hundre meter fra hverandre.
+ */
+export const NAME_RADIUS_METERS = 400;
 
 export const isPeakType = (type: string) => PEAK_TYPES.has(type);
 export const isSaddleType = (type: string) => SADDLE_TYPES.has(type);
@@ -55,7 +73,26 @@ export const placeNameGridPoints = (bounds: Bounds, spacing = GRID_SPACING_METER
     return points;
 };
 
+/** API-et gir maks 500 treff per side. */
+const PAGE_SIZE = 500;
+
+/**
+ * Sikkerhetsventil. Et punkt i tett bebyggelse har under tusen navn, så dette er
+ * romslig; grensen finnes bare for at en uventet respons ikke skal gi en evig løkke.
+ */
+const MAX_PAGES = 12;
+
+/** Bare feltene vi bruker. Halverer svaret fra 163 kB til 71 kB per side. */
+const FIELDS = [
+    "navn.stedsnavn.skrivemåte",
+    "navn.stedsnavn.navnestatus",
+    "navn.navneobjekttype",
+    "navn.representasjonspunkt",
+    "metadata",
+].join(",");
+
 type ApiResponse = {
+    metadata?: { totaltAntallTreff?: number; viserTil?: number };
     navn?: {
         navneobjekttype?: string;
         representasjonspunkt?: { nord?: number; øst?: number };
@@ -82,13 +119,33 @@ const parseResponse = (body: ApiResponse): PlaceName[] => {
     return places;
 };
 
+/**
+ * Henter alle sider for ett søkepunkt.
+ *
+ * Pagineringen er ikke valgfri: /punkt tar ikke imot noe typefilter, så svaret er
+ * sortert etter alt fra adressenavn til gardsbruk. Et punkt i Oslo vest gir 937 treff,
+ * og samtlige 30 navn av typen «Ås» — deriblant Lathusåsen — ligger på side 2.
+ * Med bare side 1 blir toppene i lavlandet stående uten navn.
+ */
 const fetchPoint = async (point: NamedPoint, signal?: AbortSignal) => {
-    const url =
+    const base =
         `${ENDPOINT}?nord=${point.lat.toFixed(5)}&ost=${point.lon.toFixed(5)}` +
-        `&koordsys=4258&radius=${SEARCH_RADIUS_METERS}&treffPerSide=500&side=1&utkoordsys=4258`;
-    const response = await fetch(url, { signal });
-    if (!response.ok) throw new Error(`Stedsnavn svarte ${response.status}`);
-    return parseResponse((await response.json()) as ApiResponse);
+        `&koordsys=4258&radius=${SEARCH_RADIUS_METERS}&treffPerSide=${PAGE_SIZE}` +
+        `&utkoordsys=4258&filtrer=${encodeURIComponent(FIELDS)}`;
+
+    const places: PlaceName[] = [];
+    for (let page = 1; page <= MAX_PAGES; page++) {
+        const response = await fetch(`${base}&side=${page}`, { signal });
+        if (!response.ok) throw new Error(`Stedsnavn svarte ${response.status}`);
+
+        const body = (await response.json()) as ApiResponse;
+        places.push(...parseResponse(body));
+
+        const total = body.metadata?.totaltAntallTreff ?? 0;
+        const shown = body.metadata?.viserTil ?? 0;
+        if (shown >= total || (body.navn?.length ?? 0) === 0) break;
+    }
+    return places;
 };
 
 /**

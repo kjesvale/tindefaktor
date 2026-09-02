@@ -15,6 +15,15 @@
     overflow-y: auto;
 }
 
+/*
+ * Uten dette krymper flex-barna til de overlapper hverandre: på en skjerm med 700 px
+ * høyde falt topplista sammen til null og eksportknappene la seg oppå radene.
+ * Nå beholder hver del sin egen høyde, og panelet scroller i stedet.
+ */
+.panel > * {
+    flex-shrink: 0;
+}
+
 .brand {
     display: flex;
     flex-direction: column;
@@ -35,6 +44,7 @@
 .exports {
     display: flex;
     gap: 6px;
+    padding-bottom: 2px;
 }
 
 .export {

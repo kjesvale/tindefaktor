@@ -30,6 +30,10 @@ Komponenter er arrow functions med en lokal `type Props`. Ingen `interface`, ing
   `position: relative` på containeren og overstyrer absolutt posisjonering.
 - **`colorSpaceConversion: "none"`** ved dekoding av høydefliser. Med fargestyring på
   justerer nettleseren RGB-verdiene, og da er de ikke lenger høyder.
+- **Stedsnavnsøket må paginere.** `/punkt` tar ikke imot noe typefilter, og et punkt i
+  by gir over 500 treff der side 1 bare er adressenavn. Fjellnavnene ligger på side 2.
+- **`Ås` er en topptype.** I lavlandet er nesten alle topper registrert som `Ås`, ikke
+  `Fjell`. Test alltid navnematching i lavlandet, ikke bare i høyfjellet.
 
 ## Kommandoer
 
