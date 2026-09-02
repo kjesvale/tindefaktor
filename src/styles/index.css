@@ -1,0 +1,78 @@
+:root {
+    color-scheme: light dark;
+
+    --paper: hsl(210 24% 96%);
+    --surface: hsl(0 0% 100%);
+    --surface-2: hsl(210 28% 97%);
+    --surface-3: hsl(210 24% 93%);
+
+    --ink: hsl(215 30% 14%);
+    --ink-2: hsl(215 14% 40%);
+    --ink-3: hsl(215 12% 56%);
+
+    --rule: hsl(214 22% 87%);
+    --rule-strong: hsl(214 18% 76%);
+
+    --accent: hsl(222 76% 46%);
+    --accent-soft: hsl(222 76% 96%);
+    --on-accent: hsl(0 0% 100%);
+
+    --warning: hsl(24 88% 44%);
+    --warning-soft: hsl(24 90% 96%);
+
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+    --radius: 10px;
+    --radius-small: 6px;
+    --shadow: 0 1px 2px hsl(215 30% 14% / 8%), 0 6px 16px hsl(215 30% 14% / 6%);
+
+    --panel-width: 344px;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --paper: hsl(215 26% 11%);
+        --surface: hsl(215 24% 15%);
+        --surface-2: hsl(215 22% 18%);
+        --surface-3: hsl(215 20% 23%);
+
+        --ink: hsl(210 26% 94%);
+        --ink-2: hsl(212 16% 71%);
+        --ink-3: hsl(212 12% 56%);
+
+        --rule: hsl(215 18% 26%);
+        --rule-strong: hsl(215 16% 36%);
+
+        --accent: hsl(214 92% 62%);
+        --accent-soft: hsl(215 30% 22%);
+        --on-accent: hsl(215 40% 10%);
+
+        --warning: hsl(28 92% 60%);
+        --warning-soft: hsl(24 30% 22%);
+
+        --shadow: 0 1px 2px hsl(0 0% 0% / 30%), 0 6px 16px hsl(0 0% 0% / 24%);
+    }
+}
+
+body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 0.9375rem;
+}
+
+.eyebrow {
+    display: block;
+    color: var(--ink-2);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.numeric {
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+}

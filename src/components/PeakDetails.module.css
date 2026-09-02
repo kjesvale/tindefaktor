@@ -1,0 +1,79 @@
+.card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    background: var(--surface-2);
+}
+
+.header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.title {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.elevation {
+    color: var(--ink-2);
+    font-size: 0.8125rem;
+}
+
+.close {
+    padding: 0 6px;
+    border: 0;
+    background: none;
+    color: var(--ink-3);
+    font-size: 1.25rem;
+    line-height: 1;
+}
+
+.close:hover {
+    color: var(--ink);
+}
+
+.facts {
+    display: grid;
+    margin: 0;
+    gap: 6px 12px;
+    grid-template-columns: 1fr 1fr;
+}
+
+.fact {
+    display: flex;
+    flex-direction: column;
+}
+
+.fact dt {
+    color: var(--ink-3);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+.fact dd {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.saddleName {
+    color: var(--ink-2);
+    font-family: var(--sans);
+    font-weight: 400;
+}
+
+.note {
+    padding: 8px 10px;
+    border-radius: var(--radius-small);
+    background: var(--warning-soft);
+    color: var(--warning);
+    font-size: 0.75rem;
+}

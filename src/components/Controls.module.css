@@ -1,0 +1,126 @@
+.controls {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.search,
+.cancel {
+    padding: 10px 14px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-small);
+    font-size: 0.9375rem;
+    font-weight: 600;
+}
+
+.search {
+    background: var(--accent);
+    color: var(--on-accent);
+}
+
+.search:hover {
+    background: color-mix(in srgb, var(--accent) 88%, black);
+}
+
+.cancel {
+    border-color: var(--rule-strong);
+    background: var(--surface-2);
+    color: var(--ink);
+}
+
+.progress {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.progressTrack {
+    height: 4px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--surface-3);
+}
+
+.progressFill {
+    height: 100%;
+    border-radius: 999px;
+    background: var(--accent);
+    transition: width 120ms linear;
+}
+
+.progressText {
+    color: var(--ink-2);
+    font-size: 0.75rem;
+}
+
+.summary {
+    color: var(--ink-2);
+    font-size: 0.8125rem;
+}
+
+.error {
+    padding: 8px 10px;
+    border-radius: var(--radius-small);
+    background: var(--warning-soft);
+    color: var(--warning);
+    font-size: 0.8125rem;
+}
+
+.group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-top: 1px solid var(--rule);
+    padding-top: 14px;
+}
+
+.group legend {
+    padding: 0;
+}
+
+.options {
+    display: flex;
+    gap: 6px;
+}
+
+.option {
+    flex: 1;
+    padding: 6px 10px;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-small);
+    background: var(--surface);
+    color: var(--ink-2);
+    font-size: 0.8125rem;
+}
+
+.option:hover {
+    border-color: var(--rule-strong);
+}
+
+.active {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.toggle {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    font-size: 0.8125rem;
+}
+
+.toggle input {
+    margin-top: 2px;
+    accent-color: var(--accent);
+}
+
+.toggleHint {
+    display: block;
+    color: var(--ink-3);
+    font-size: 0.75rem;
+}

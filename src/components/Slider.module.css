@@ -1,0 +1,34 @@
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.label {
+    font-size: 0.8125rem;
+    font-weight: 500;
+}
+
+.value {
+    color: var(--ink);
+    font-size: 0.8125rem;
+    font-weight: 600;
+}
+
+.range {
+    width: 100%;
+    margin: 0;
+    accent-color: var(--accent);
+}
+
+.hint {
+    color: var(--ink-3);
+    font-size: 0.75rem;
+}
