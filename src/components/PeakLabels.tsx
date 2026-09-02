@@ -30,7 +30,12 @@ export const PeakLabels = ({ map, peaks, selectedId, onSelect }: Props) => {
     const reposition = useCallback(() => {
         if (!map) return;
         const canvas = map.getCanvas();
-        const viewport = { left: 0, top: 0, right: canvas.clientWidth, bottom: canvas.clientHeight };
+        const viewport = {
+            left: 0,
+            top: 0,
+            right: canvas.clientWidth,
+            bottom: canvas.clientHeight,
+        };
 
         const candidates: LabelCandidate<Placed>[] = peaks
             .filter(peak => peak.name)
