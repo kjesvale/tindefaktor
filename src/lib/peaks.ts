@@ -22,6 +22,27 @@ export const defaultFilters: Filters = {
     minIsolation: 0,
 };
 
+/**
+ * Minste primærfaktor som er verdt å tegne ved en gitt zoom. Uten et gulv blir et
+ * utzoomet utsnitt et teppe av prikker — Sør-Norge gir 1548 topper over 100 m på en
+ * skjermbredde — og de store fjellene drukner mellom naboene sine. Trappen følger
+ * samtidig hva rutenettet tåler: på 300 m per piksel er en topp med 20 m primærfaktor
+ * uansett støy.
+ */
+export const scaleProminenceFloor = (zoom: number) => {
+    if (zoom < 9) return 600;
+    if (zoom < 10) return 400;
+    if (zoom < 11) return 250;
+    if (zoom < 12) return 150;
+    return 0;
+};
+
+/** Gulvet er et tillegg, ikke en overstyring: en strengere slider vinner alltid. */
+export const filtersAtZoom = (filters: Filters, zoom: number): Filters => ({
+    ...filters,
+    minProminence: Math.max(filters.minProminence, scaleProminenceFloor(zoom)),
+});
+
 export const matchesFilters = (peak: NamedPeak, filters: Filters) =>
     peak.prominence >= filters.minProminence &&
     peak.elevation >= filters.minElevation &&

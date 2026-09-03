@@ -1,5 +1,12 @@
 import { describe, expect, test } from "bun:test";
-import { filterPeaks, peakId, sortPeaks, type NamedPeak } from "./peaks";
+import {
+    filterPeaks,
+    filtersAtZoom,
+    peakId,
+    scaleProminenceFloor,
+    sortPeaks,
+    type NamedPeak,
+} from "./peaks";
 
 const peak = (overrides: Partial<NamedPeak>): NamedPeak => ({
     id: "x",
@@ -47,6 +54,43 @@ describe("filterPeaks", () => {
         expect(
             filterPeaks(peaks, { minProminence: 0, minElevation: 0, minIsolation: 0 }),
         ).toHaveLength(3);
+    });
+});
+
+describe("scaleProminenceFloor", () => {
+    test("strammer terskelen når kartet zoomes ut", () => {
+        expect(scaleProminenceFloor(7)).toBe(600);
+        expect(scaleProminenceFloor(9.5)).toBe(400);
+        expect(scaleProminenceFloor(10.5)).toBe(250);
+        expect(scaleProminenceFloor(11.9)).toBe(150);
+    });
+
+    test("slipper taket fra zoom 12, der rutenettet er fint nok", () => {
+        expect(scaleProminenceFloor(12)).toBe(0);
+        expect(scaleProminenceFloor(15)).toBe(0);
+    });
+});
+
+describe("filtersAtZoom", () => {
+    const filters = { minProminence: 100, minElevation: 300, minIsolation: 0 };
+
+    test("gulvet løfter en slappere slider", () => {
+        expect(filtersAtZoom(filters, 9.5).minProminence).toBe(400);
+    });
+
+    test("en strengere slider vinner over gulvet", () => {
+        expect(filtersAtZoom({ ...filters, minProminence: 800 }, 9.5).minProminence).toBe(800);
+    });
+
+    test("de andre tersklene røres ikke", () => {
+        expect(filtersAtZoom(filters, 7)).toMatchObject({ minElevation: 300, minIsolation: 0 });
+    });
+
+    test("Gaustatoppen overlever gulvet på alle zoomnivåer", () => {
+        const gausta = peak({ id: "gausta", elevation: 1799, prominence: 860 });
+        for (const zoom of [7, 9, 10, 11, 12]) {
+            expect(filterPeaks([gausta], filtersAtZoom(filters, zoom))).toHaveLength(1);
+        }
     });
 });
 

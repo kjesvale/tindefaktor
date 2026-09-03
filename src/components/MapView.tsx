@@ -107,10 +107,16 @@ const addLayers = (map: MapLibreMap) => {
         12,
     ];
 
+    // MapLibre tegner prikkene i den rekkefølgen de ligger i kilden, og der kommer de
+    // mest prominente først — altså nederst. På et vidt utsnitt ble Gaustatoppen malt
+    // over av de hvite kantene til naboene sine. Sorteringsnøkkelen løfter de store opp.
+    const sortKey: DataDrivenPropertyValueSpecification<number> = ["get", "prominence"];
+
     map.addLayer({
         id: "topp-glorie",
         type: "circle",
         source: PEAK_SOURCE,
+        layout: { "circle-sort-key": sortKey },
         paint: {
             "circle-radius": ["+", radius, 2.5],
             "circle-color": "#ffffff",
@@ -123,6 +129,7 @@ const addLayers = (map: MapLibreMap) => {
         id: "topp-punkt",
         type: "circle",
         source: PEAK_SOURCE,
+        layout: { "circle-sort-key": sortKey },
         paint: {
             // Størrelsen leser primærfaktoren direkte, så de store fjellene skiller seg ut.
             "circle-radius": radius,

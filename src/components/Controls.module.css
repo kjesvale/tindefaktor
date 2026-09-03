@@ -73,6 +73,12 @@
     font-size: 0.8125rem;
 }
 
+.scaleNote {
+    color: var(--ink-3);
+    font-size: 0.75rem;
+    line-height: 1.4;
+}
+
 .error {
     padding: 8px 10px;
     border-radius: var(--radius-small);
