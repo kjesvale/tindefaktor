@@ -26,12 +26,23 @@ Komponenter er arrow functions med en lokal `type Props`. Ingen `interface`, ing
 - **`optimizeDeps.exclude: ["maplibre-gl"]`** må stå. MapLibre bygger URL-en til sin
   egen worker fra `import.meta.url`, og Vites prebundling flytter biblioteket bort fra
   worker-filen.
+- **`setWorkerUrl` må settes fra `?worker&url`.** Det samme `import.meta.url`-trikset
+  bommer i produksjonsbygget: `maplibre-gl-worker.mjs` blir ikke kopiert til `dist/`, og
+  SPA-omdirigeringen svarer index.html i stedet for 404. Workeren dør stille, og alt den
+  gjør forsvinner — GeoJSON-lagene blir tomme og høydeflisene blir aldri tolket. Feilen
+  vises bare i bygget, aldri i `bun run dev`.
 - **Kartcontaineren må ha eksplisitt høyde**, ikke `inset: 0`. MapLibre setter
   `position: relative` på containeren og overstyrer absolutt posisjonering.
 - **`colorSpaceConversion: "none"`** ved dekoding av høydefliser. Med fargestyring på
   justerer nettleseren RGB-verdiene, og da er de ikke lenger høyder.
 - **Stedsnavnsøket må paginere.** `/punkt` tar ikke imot noe typefilter, og et punkt i
   by gir over 500 treff der side 1 bare er adressenavn. Fjellnavnene ligger på side 2.
+- **Fjellnavnene må ligge i `map.getCanvasContainer()`.** MapLibre ser bare hendelser
+  som hører til den noden: touch-håndteringen filtrerer bort berøringer med target
+  utenfor, og lytteren som avslutter et musedra henger på den samme containeren. Lå
+  lappene utenfor og hendelsene ble sendt videre for hånd, låste kartet seg på mobil —
+  en videresendt `mousedown` uten tilhørende `mouseup` lot `mousePan` stå aktiv, og da
+  blokkerte MapLibre panorering med finger til neste trykk landet på kartet.
 - **`Ås` er en topptype.** I lavlandet er nesten alle topper registrert som `Ås`, ikke
   `Fjell`. Test alltid navnematching i lavlandet, ikke bare i høyfjellet.
 

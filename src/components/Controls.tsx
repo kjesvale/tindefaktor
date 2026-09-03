@@ -16,6 +16,8 @@ type Props = {
     state: SearchState;
     filters: Filters;
     matchCount: number;
+    /** Sammenslått bunnark viser bare handlingen og resultatet, ikke tersklene. */
+    compact: boolean;
     baseLayer: BaseLayer;
     terrain: boolean;
     onSearch: () => void;
@@ -29,6 +31,7 @@ export const Controls = ({
     state,
     filters,
     matchCount,
+    compact,
     baseLayer,
     terrain,
     onSearch,
@@ -86,62 +89,71 @@ export const Controls = ({
                 </p>
             )}
 
-            <fieldset className={css.group}>
-                <legend className="eyebrow">Terskler</legend>
-                <Slider
-                    label="Primærfaktor"
-                    value={filters.minProminence}
-                    max={1000}
-                    step={10}
-                    hint="Hvor høyt fjellet reiser seg over sadelen til nærmeste høyere topp"
-                    onChange={minProminence => onFiltersChange({ ...filters, minProminence })}
-                />
-                <Slider
-                    label="Minste høyde"
-                    value={filters.minElevation}
-                    max={2500}
-                    step={50}
-                    onChange={minElevation => onFiltersChange({ ...filters, minElevation })}
-                />
-                <Slider
-                    label="Minste isolasjon"
-                    value={filters.minIsolation}
-                    max={20000}
-                    step={250}
-                    hint="Avstand til nærmeste punkt som er høyere"
-                    onChange={minIsolation => onFiltersChange({ ...filters, minIsolation })}
-                />
-            </fieldset>
+            {!compact && (
+                <>
+                    <fieldset className={css.group}>
+                        <legend className="eyebrow">Terskler</legend>
+                        <Slider
+                            label="Primærfaktor"
+                            value={filters.minProminence}
+                            max={1000}
+                            step={10}
+                            hint="Hvor høyt fjellet reiser seg over sadelen til nærmeste høyere topp"
+                            onChange={minProminence =>
+                                onFiltersChange({ ...filters, minProminence })
+                            }
+                        />
+                        <Slider
+                            label="Minste høyde"
+                            value={filters.minElevation}
+                            max={2500}
+                            step={50}
+                            onChange={minElevation => onFiltersChange({ ...filters, minElevation })}
+                        />
+                        <Slider
+                            label="Minste isolasjon"
+                            value={filters.minIsolation}
+                            max={20000}
+                            step={250}
+                            hint="Avstand til nærmeste punkt som er høyere"
+                            onChange={minIsolation => onFiltersChange({ ...filters, minIsolation })}
+                        />
+                    </fieldset>
 
-            <fieldset className={css.group}>
-                <legend className="eyebrow">Kart</legend>
-                <div className={css.options} role="group" aria-label="Bakgrunnskart">
-                    {(Object.keys(baseLayerNames) as BaseLayer[]).map(layer => (
-                        <button
-                            key={layer}
-                            type="button"
-                            className={classNames(css.option, layer === baseLayer && css.active)}
-                            aria-pressed={layer === baseLayer}
-                            onClick={() => onBaseLayerChange(layer)}
-                        >
-                            {baseLayerNames[layer]}
-                        </button>
-                    ))}
-                </div>
-                <label className={css.toggle}>
-                    <input
-                        type="checkbox"
-                        checked={terrain}
-                        onChange={event => onTerrainChange(event.target.checked)}
-                    />
-                    <span>
-                        Skyggerelieff og 3D
-                        <span className={css.toggleHint}>
-                            Bruker høydedataene som allerede er lastet ned
-                        </span>
-                    </span>
-                </label>
-            </fieldset>
+                    <fieldset className={css.group}>
+                        <legend className="eyebrow">Kart</legend>
+                        <div className={css.options} role="group" aria-label="Bakgrunnskart">
+                            {(Object.keys(baseLayerNames) as BaseLayer[]).map(layer => (
+                                <button
+                                    key={layer}
+                                    type="button"
+                                    className={classNames(
+                                        css.option,
+                                        layer === baseLayer && css.active,
+                                    )}
+                                    aria-pressed={layer === baseLayer}
+                                    onClick={() => onBaseLayerChange(layer)}
+                                >
+                                    {baseLayerNames[layer]}
+                                </button>
+                            ))}
+                        </div>
+                        <label className={css.toggle}>
+                            <input
+                                type="checkbox"
+                                checked={terrain}
+                                onChange={event => onTerrainChange(event.target.checked)}
+                            />
+                            <span>
+                                Skyggerelieff og 3D
+                                <span className={css.toggleHint}>
+                                    Bruker høydedataene som allerede er lastet ned
+                                </span>
+                            </span>
+                        </label>
+                    </fieldset>
+                </>
+            )}
         </div>
     );
 };

@@ -1,10 +1,21 @@
 /** Oppretter kartet én gang og holder det i live så lenge komponenten står. */
 
-import { MapLibreMap, NavigationControl, ScaleControl } from "maplibre-gl";
+import { MapLibreMap, NavigationControl, ScaleControl, setWorkerUrl } from "maplibre-gl";
+import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 import { useEffect, useRef, useState } from "react";
 import { buildStyle, type BaseLayer } from "../lib/mapStyle";
 import type { Bounds } from "../lib/tiles";
 import type { ViewState } from "../lib/urlState";
+
+/*
+ * MapLibre finner sin egen worker ut fra import.meta.url. I produksjonsbygget ligger
+ * maplibre-gl-worker.mjs ikke ved siden av bundlen, og verten svarer index.html på den
+ * adressen i stedet for 404 — workeren døde stille. Alt den gjør forsvant med den:
+ * GeoJSON-lagene ble tomme (prikkene) og høydeflisene ble aldri tolket (skyggerelieff
+ * og 3D). ?worker&url lar Vite pakke workeren med sin egen delte modul og gi oss
+ * adressen til resultatet.
+ */
+setWorkerUrl(workerUrl);
 
 export const boundsOf = (map: MapLibreMap): Bounds => {
     const bounds = map.getBounds();

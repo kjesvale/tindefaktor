@@ -1,0 +1,29 @@
+.handle {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 0 6px;
+    border: 0;
+    background: none;
+    /* Uten dette tolker nettleseren draet som en rulling og arket står stille. */
+    touch-action: none;
+}
+
+.grip {
+    display: block;
+    width: 40px;
+    height: 4px;
+    border-radius: 999px;
+    background: var(--rule-strong);
+}
+
+.handle:active .grip {
+    background: var(--ink-3);
+}
+
+.handle:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+    border-radius: var(--radius-small);
+}

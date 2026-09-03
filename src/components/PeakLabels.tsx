@@ -1,6 +1,7 @@
 import classNames from "classnames";
 import type { MapLibreMap } from "maplibre-gl";
 import { useCallback, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { boxAround, placeLabels, type LabelCandidate } from "../lib/labels";
 import type { NamedPeak } from "../lib/peaks";
 import css from "./PeakLabels.module.css";
@@ -69,66 +70,35 @@ export const PeakLabels = ({ map, peaks, selectedId, onSelect }: Props) => {
         };
     }, [map, reposition]);
 
-    /**
-     * Lappene ligger utenfor kartets eget DOM-tre, så hjul og musetrykk over dem når
-     * aldri fram til MapLibre. Uten videresending stopper både zooming og panorering
-     * så snart pekeren treffer et fjellnavn.
+    if (!map) return null;
+
+    /*
+     * Lappene rendres inn i kartets egen canvas-container — samme sted MapLibre
+     * henger markørene sine. Utenfor det treet ser MapLibre dem ikke: berøringer
+     * slipper bare gjennom når de starter inne i containeren, og lytteren som
+     * avslutter et dra sitter på den samme noden. Da måtte hendelsene sendes videre
+     * for hånd, og en videresendt mousedown uten tilhørende mouseup lot MapLibre tro
+     * at et musedra pågikk for alltid. Det blokkerte panorering med finger til neste
+     * trykk landet på kartet — kartet låste seg på mobil.
      */
-    const forwardWheel = (event: React.WheelEvent<HTMLElement>) => {
-        const container = map?.getCanvasContainer();
-        if (!container) return;
-        container.dispatchEvent(
-            new WheelEvent("wheel", {
-                deltaX: event.deltaX,
-                deltaY: event.deltaY,
-                deltaZ: event.deltaZ,
-                deltaMode: event.deltaMode,
-                clientX: event.clientX,
-                clientY: event.clientY,
-                bubbles: true,
-                cancelable: true,
-            }),
-        );
-    };
-
-    const forwardMouseDown = (event: React.MouseEvent<HTMLElement>) => {
-        const container = map?.getCanvasContainer();
-        if (!container) return;
-        container.dispatchEvent(
-            new MouseEvent("mousedown", {
-                clientX: event.clientX,
-                clientY: event.clientY,
-                button: event.button,
-                buttons: event.buttons,
-                // Uten modifikatorene ville Cmd + dra fra et fjellnavn panorert
-                // i stedet for å rotere.
-                metaKey: event.metaKey,
-                ctrlKey: event.ctrlKey,
-                shiftKey: event.shiftKey,
-                bubbles: true,
-                cancelable: true,
-            }),
-        );
-    };
-
-    return (
+    return createPortal(
         <div className={css.layer}>
             {visible.map(({ peak, x, y, elevation }) => (
                 <button
                     key={peak.id}
                     type="button"
+                    data-peak-label
                     className={classNames(css.label, peak.id === selectedId && css.selected)}
                     style={{
                         transform: `translate(-50%, 0) translate(${x}px, ${y + MARKER_OFFSET}px)`,
                     }}
-                    onWheel={forwardWheel}
-                    onMouseDown={forwardMouseDown}
                     onClick={() => onSelect(peak)}
                 >
                     {peak.name}
                     <span className={css.elevation}>{elevation}</span>
                 </button>
             ))}
-        </div>
+        </div>,
+        map.getCanvasContainer(),
     );
 };

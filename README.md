@@ -28,7 +28,14 @@ ingenting på nytt — hele resultatsettet ligger allerede i minnet.
 | Klikk på en topp eller et navn   | Vis detaljer og nøkkelsadelen |
 
 Cmd er lagt til fordi Ctrl + klikk er reservert til høyreklikk på macOS. Fjellnavnene
-på kartet sender hjul og musetrykk videre til kartet, så de er ikke i veien for noe.
+ligger i kartets egen container og er derfor ikke i veien for noe: et dra som starter
+på et navn panorerer, og hjulet zoomer.
+
+På mobil blir panelet et bunnark med to høyder. Sammenslått står bare søkeknappen og
+resultatlinja framme, og kartet får resten av skjermen; håndtaket øverst kan trykkes
+eller dras for å hente fram terskler og toppliste. Velger du en topp, legger detaljene
+seg som et kort over kartet framfor nede i panelet, og arket trekker seg sammen så
+kartet har plass til å vise toppen.
 
 ## Algoritmen
 

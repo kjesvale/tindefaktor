@@ -38,6 +38,13 @@
     color: var(--ink);
 }
 
+@media (pointer: coarse) {
+    .close {
+        padding: 2px 8px;
+        font-size: 1.5rem;
+    }
+}
+
 .facts {
     display: grid;
     margin: 0;

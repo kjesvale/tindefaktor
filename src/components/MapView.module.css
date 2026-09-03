@@ -19,6 +19,23 @@
     font-size: 0.6875rem;
 }
 
+/*
+ * På mobil ligger detaljkortet over kartet framfor nede i panelet: der havnet det
+ * under skjermkanten, og en topp du nettopp trykket på så ut som om ingenting skjedde.
+ * Bunnen holder seg klar av målestokken og attribusjonen, som må være synlige.
+ */
+.details {
+    position: absolute;
+    right: 10px;
+    bottom: 34px;
+    left: 10px;
+    max-height: 70%;
+    overflow-y: auto;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    z-index: 2;
+}
+
 .lost {
     position: absolute;
     inset: 0;
