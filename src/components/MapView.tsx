@@ -3,6 +3,7 @@ import type {
     GeoJSONSource,
     MapLibreMap,
     MapMouseEvent,
+    Point,
 } from "maplibre-gl";
 import { useEffect, useRef } from "react";
 import { useDragRotate } from "../hooks/useDragRotate";
@@ -11,10 +12,14 @@ import { TERRAIN_SOURCE, type BaseLayer } from "../lib/mapStyle";
 import type { NamedPeak } from "../lib/peaks";
 import type { ViewState } from "../lib/urlState";
 import css from "./MapView.module.css";
+import { PeakDetails } from "./PeakDetails";
 import { PeakLabels } from "./PeakLabels";
 
 const PEAK_SOURCE = "topper";
 const SADDLE_SOURCE = "sadler";
+
+/** En fingertupp treffer ikke en prikk på fire piksler, så treffet får en romslig boks. */
+const TAP_TOLERANCE = 12;
 
 const emptyCollection = { type: "FeatureCollection", features: [] } as const;
 
@@ -141,12 +146,37 @@ const addLayers = (map: MapLibreMap) => {
     });
 };
 
+/** Toppen nærmest punktet, blant dem som ligger innenfor trefftoleransen. */
+const peakAt = (map: MapLibreMap, point: Point, peaks: NamedPeak[]) => {
+    const features = map.queryRenderedFeatures(
+        [
+            [point.x - TAP_TOLERANCE, point.y - TAP_TOLERANCE],
+            [point.x + TAP_TOLERANCE, point.y + TAP_TOLERANCE],
+        ],
+        { layers: ["topp-punkt"] },
+    );
+    const hit = new Set(features.map(feature => feature.properties?.["id"]));
+
+    let nearest: NamedPeak | null = null;
+    let shortest = Infinity;
+    for (const peak of peaks) {
+        if (!hit.has(peak.id)) continue;
+        const distance = map.project([peak.lon, peak.lat]).dist(point);
+        if (distance >= shortest) continue;
+        shortest = distance;
+        nearest = peak;
+    }
+    return nearest;
+};
+
 type Props = {
     initialView: ViewState;
     baseLayer: BaseLayer;
     terrain: boolean;
     peaks: NamedPeak[];
     selected: NamedPeak | null;
+    /** På mobil ligger detaljkortet over kartet i stedet for nede i panelet. */
+    showDetails: boolean;
     onSelect: (peak: NamedPeak | null) => void;
     onMoveEnd: (view: ViewState) => void;
     onMapReady: (map: MapLibreMap) => void;
@@ -158,6 +188,7 @@ export const MapView = ({
     terrain,
     peaks,
     selected,
+    showDetails,
     onSelect,
     onMoveEnd,
     onMapReady,
@@ -207,10 +238,13 @@ export const MapView = ({
         if (!map || !ready) return;
 
         const handleClick = (event: MapMouseEvent) => {
-            const features = map.queryRenderedFeatures(event.point, { layers: ["topp-punkt"] });
-            const id = features[0]?.properties?.["id"];
-            const peak = peaksRef.current.find(candidate => candidate.id === id);
-            onSelect(peak ?? null);
+            // Fjellnavnene ligger i kartets egen container, så et klikk på en lapp
+            // bobler hit også. Lappen velger toppen selv; uten dette ville kartet
+            // avmarkert den i samme øyeblikk.
+            const target = event.originalEvent.target;
+            if (target instanceof Element && target.closest("[data-peak-label]")) return;
+
+            onSelect(peakAt(map, event.point, peaksRef.current));
         };
         const showPointer = () => {
             map.getCanvas().style.cursor = "pointer";
@@ -252,6 +286,11 @@ export const MapView = ({
                 selectedId={selected?.id ?? null}
                 onSelect={onSelect}
             />
+            {showDetails && selected && (
+                <div className={css.details}>
+                    <PeakDetails peak={selected} onClose={() => onSelect(null)} />
+                </div>
+            )}
             {contextLost && (
                 <div className={css.lost} role="alert">
                     <p className={css.lostText}>

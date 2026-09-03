@@ -3,15 +3,26 @@
     height: 100%;
 }
 
+/*
+ * Panelet er rammen, .body er det som ruller. Delingen finnes for bunnarket på mobil:
+ * håndtaket må bli stående mens innholdet ruller under, ellers forsvinner det som
+ * lukker arket ut av syne så snart du blar i topplista.
+ */
 .panel {
     display: flex;
     width: var(--panel-width);
     flex-direction: column;
     flex-shrink: 0;
-    gap: 16px;
-    padding: 18px;
     border-right: 1px solid var(--rule);
     background: var(--surface);
+}
+
+.body {
+    display: flex;
+    min-height: 0;
+    flex-direction: column;
+    gap: 16px;
+    padding: 18px;
     overflow-y: auto;
 }
 
@@ -20,7 +31,7 @@
  * høyde falt topplista sammen til null og eksportknappene la seg oppå radene.
  * Nå beholder hver del sin egen høyde, og panelet scroller i stedet.
  */
-.panel > * {
+.body > * {
     flex-shrink: 0;
 }
 
@@ -72,5 +83,22 @@
         max-height: 52%;
         border-right: 0;
         border-top: 1px solid var(--rule);
+    }
+
+    .body {
+        gap: 14px;
+        padding: 2px 16px max(16px, env(safe-area-inset-bottom));
+    }
+
+    /*
+     * Sammenslått står bare søkeknappen og resultatlinja igjen, og høyden følger det
+     * som er der. Kartet får resten av skjermen uten at noen tallverdi må treffes.
+     */
+    .collapsed {
+        max-height: none;
+    }
+
+    .collapsed .brand {
+        display: none;
     }
 }

@@ -34,6 +34,13 @@
     border-color: var(--rule-strong);
 }
 
+/* Med finger framfor peker trenger lappen et større treffområde. */
+@media (pointer: coarse) {
+    .label {
+        padding: 5px 9px;
+    }
+}
+
 .elevation {
     color: var(--ink-3);
     font-family: var(--mono);
