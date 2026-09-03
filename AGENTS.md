@@ -26,6 +26,11 @@ Komponenter er arrow functions med en lokal `type Props`. Ingen `interface`, ing
 - **`optimizeDeps.exclude: ["maplibre-gl"]`** må stå. MapLibre bygger URL-en til sin
   egen worker fra `import.meta.url`, og Vites prebundling flytter biblioteket bort fra
   worker-filen.
+- **`setWorkerUrl` må settes fra `?worker&url`.** Det samme `import.meta.url`-trikset
+  bommer i produksjonsbygget: `maplibre-gl-worker.mjs` blir ikke kopiert til `dist/`, og
+  SPA-omdirigeringen svarer index.html i stedet for 404. Workeren dør stille, og alt den
+  gjør forsvinner — GeoJSON-lagene blir tomme og høydeflisene blir aldri tolket. Feilen
+  vises bare i bygget, aldri i `bun run dev`.
 - **Kartcontaineren må ha eksplisitt høyde**, ikke `inset: 0`. MapLibre setter
   `position: relative` på containeren og overstyrer absolutt posisjonering.
 - **`colorSpaceConversion: "none"`** ved dekoding av høydefliser. Med fargestyring på
