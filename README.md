@@ -18,6 +18,18 @@ Alt regnes ut i nettleseren. Ingen server, ingen API-nøkler.
 Tersklene filtrerer resultatet med én gang. Å dra i primærfaktor-slideren laster
 ingenting på nytt — hele resultatsettet ligger allerede i minnet.
 
+## Kartnavigasjon
+
+| Handling                         | Gjør                          |
+| -------------------------------- | ----------------------------- |
+| Dra                              | Panorer                       |
+| Rull                             | Zoom                          |
+| **Cmd + dra** (eller Ctrl + dra) | Roter og tilt kameraet        |
+| Klikk på en topp eller et navn   | Vis detaljer og nøkkelsadelen |
+
+Cmd er lagt til fordi Ctrl + klikk er reservert til høyreklikk på macOS. Fjellnavnene
+på kartet sender hjul og musetrykk videre til kartet, så de er ikke i veien for noe.
+
 ## Algoritmen
 
 Prominens beregnes med **union-find over et merge tree**, som er definisjonen av
