@@ -16,6 +16,8 @@ type Props = {
     state: SearchState;
     filters: Filters;
     matchCount: number;
+    /** Primærfaktor-gulvet zoomnivået krever, når det er strengere enn slideren. */
+    scaleFloor: number | null;
     /** Sammenslått bunnark viser bare handlingen og resultatet, ikke tersklene. */
     compact: boolean;
     baseLayer: BaseLayer;
@@ -31,6 +33,7 @@ export const Controls = ({
     state,
     filters,
     matchCount,
+    scaleFloor,
     compact,
     baseLayer,
     terrain,
@@ -80,13 +83,22 @@ export const Controls = ({
             )}
 
             {state.status === "done" && (
-                <p className={css.summary}>
-                    {formatCount(matchCount, "topp", "topper")} over tersklene
-                    {state.elapsedMs !== null && ` · ${formatDuration(state.elapsedMs)}`}
-                    {state.metersPerPixel !== null &&
-                        ` · ${Math.round(state.metersPerPixel)} m rutenett`}
-                    {state.naming && " · henter navn…"}
-                </p>
+                <>
+                    <p className={css.summary}>
+                        {formatCount(matchCount, "topp", "topper")} over tersklene
+                        {state.elapsedMs !== null && ` · ${formatDuration(state.elapsedMs)}`}
+                        {state.metersPerPixel !== null &&
+                            ` · ${Math.round(state.metersPerPixel)} m rutenett`}
+                        {state.naming && " · henter navn…"}
+                    </p>
+
+                    {scaleFloor !== null && (
+                        <p className={css.scaleNote}>
+                            Utsnittet er for vidt til å tegne alle: bare topper over {scaleFloor} m
+                            primærfaktor vises. Zoom inn for flere.
+                        </p>
+                    )}
+                </>
             )}
 
             {!compact && (

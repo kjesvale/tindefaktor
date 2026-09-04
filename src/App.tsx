@@ -11,7 +11,15 @@ import { useMediaQuery } from "./hooks/useMediaQuery";
 import { BOUNDS_MARGIN, usePeakSearch } from "./hooks/usePeakSearch";
 import { downloadFile, toGeoJson, toGpx } from "./lib/export";
 import type { BaseLayer } from "./lib/mapStyle";
-import { filterPeaks, sortPeaks, type Filters, type NamedPeak, type SortKey } from "./lib/peaks";
+import {
+    filterPeaks,
+    filtersAtZoom,
+    scaleProminenceFloor,
+    sortPeaks,
+    type Filters,
+    type NamedPeak,
+    type SortKey,
+} from "./lib/peaks";
 import type { SheetState } from "./lib/sheet";
 import { expandBounds } from "./lib/tiles";
 import { parseAppState, serialiseAppState, type ViewState } from "./lib/urlState";
@@ -37,9 +45,12 @@ export const App = () => {
     // Bunnarket finnes bare på mobil. På bred skjerm står panelet alltid åpent.
     const collapsed = mobile && sheet === "collapsed";
 
+    // Prikkene skal tåle å bli sett på avstand, så terskelen strammes med utzoomingen.
+    const scaleFloor = scaleProminenceFloor(view.zoom);
+
     const visible = useMemo(
-        () => sortPeaks(filterPeaks(state.peaks, filters), sortKey),
-        [state.peaks, filters, sortKey],
+        () => sortPeaks(filterPeaks(state.peaks, filtersAtZoom(filters, view.zoom)), sortKey),
+        [state.peaks, filters, view.zoom, sortKey],
     );
 
     const selected = useMemo(
@@ -96,6 +107,7 @@ export const App = () => {
                         state={state}
                         filters={filters}
                         matchCount={visible.length}
+                        scaleFloor={scaleFloor > filters.minProminence ? scaleFloor : null}
                         compact={collapsed}
                         baseLayer={baseLayer}
                         terrain={terrain}

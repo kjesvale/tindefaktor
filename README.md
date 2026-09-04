@@ -18,6 +18,13 @@ Alt regnes ut i nettleseren. Ingen server, ingen API-nøkler.
 Tersklene filtrerer resultatet med én gang. Å dra i primærfaktor-slideren laster
 ingenting på nytt — hele resultatsettet ligger allerede i minnet.
 
+Utzoomet strammes terskelen av seg selv. Et utsnitt over hele Sør-Norge rommer 1548
+topper med mer enn 100 m primærfaktor, og da drukner de store fjellene i teppet av
+prikker: kartet tegner bare topper over 600 m under zoom 9, 400 m på zoom 9, 250 m på
+zoom 10 og 150 m på zoom 11. Fra zoom 12 bestemmer slideren alene. Gulvet gjelder bare
+visningen — analysen finner de små toppene som før, og de dukker opp igjen med en gang
+du zoomer inn.
+
 ## Kartnavigasjon
 
 | Handling                         | Gjør                          |
