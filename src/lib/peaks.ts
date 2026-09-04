@@ -43,16 +43,33 @@ export const filtersAtZoom = (filters: Filters, zoom: number): Filters => ({
     minProminence: Math.max(filters.minProminence, scaleProminenceFloor(zoom)),
 });
 
+/**
+ * Isolasjon på −1 betyr at analyseområdet ikke inneholdt noe høyere punkt. Toppen er
+ * altså den høyeste i utsnittet, og avstanden til noe høyere er større enn området —
+ * ikke mindre enn alt annet. Leses sentinelen som et tall, faller områdets høyeste
+ * fjell ut av enhver isolasjonsterskel: Galdhøpiggen forsvant fra kartet mens
+ * Glittertinden ble stående.
+ */
+const isolationOf = (peak: NamedPeak) => (peak.isolation < 0 ? Infinity : peak.isolation);
+
 export const matchesFilters = (peak: NamedPeak, filters: Filters) =>
     peak.prominence >= filters.minProminence &&
     peak.elevation >= filters.minElevation &&
-    peak.isolation >= filters.minIsolation;
+    isolationOf(peak) >= filters.minIsolation;
 
 export const filterPeaks = (peaks: NamedPeak[], filters: Filters) =>
     peaks.filter(peak => matchesFilters(peak, filters));
 
+const sortValue = (peak: NamedPeak, key: SortKey) =>
+    key === "isolation" ? isolationOf(peak) : peak[key];
+
+/** Likhetstesten først: Infinity − Infinity er NaN, og en NaN-komparator sorterer vilkårlig. */
+const descending = (a: number, b: number) => (a === b ? 0 : b > a ? 1 : -1);
+
 export const sortPeaks = (peaks: NamedPeak[], key: SortKey) =>
-    [...peaks].sort((a, b) => b[key] - a[key] || b.elevation - a.elevation);
+    [...peaks].sort(
+        (a, b) => descending(sortValue(a, key), sortValue(b, key)) || b.elevation - a.elevation,
+    );
 
 /** Stabil identitet på tvers av oppdateringer, slik at kartet kan spore markører. */
 export const peakId = (peak: FoundPeak) => `${peak.lon.toFixed(5)},${peak.lat.toFixed(5)}`;

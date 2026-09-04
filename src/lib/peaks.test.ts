@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import {
+    defaultFilters,
     filterPeaks,
     filtersAtZoom,
     peakId,
@@ -48,6 +49,14 @@ describe("filterPeaks", () => {
             minIsolation: 10000,
         });
         expect(kept.map(p => p.id)).toEqual(["høy"]);
+    });
+
+    test("ukjent isolasjon er uendelig, ikke null", () => {
+        const highest = peak({ id: "høyest", isolation: -1 });
+        expect(filterPeaks([highest], defaultFilters)).toHaveLength(1);
+        expect(
+            filterPeaks([highest], { minProminence: 0, minElevation: 0, minIsolation: 15000 }),
+        ).toHaveLength(1);
     });
 
     test("terskler på null slipper alt gjennom", () => {
@@ -112,6 +121,23 @@ describe("sortPeaks", () => {
             peak({ id: "høy", elevation: 2200, prominence: 200 }),
         ];
         expect(sortPeaks(tied, "prominence").map(p => p.id)).toEqual(["høy", "lav"]);
+    });
+
+    test("ukjent isolasjon sorteres øverst, ikke nederst", () => {
+        const mixed = [
+            peak({ id: "nær", isolation: 3000 }),
+            peak({ id: "høyest", isolation: -1 }),
+            peak({ id: "fjern", isolation: 12000 }),
+        ];
+        expect(sortPeaks(mixed, "isolation").map(p => p.id)).toEqual(["høyest", "fjern", "nær"]);
+    });
+
+    test("to ukjente isolasjoner avgjøres på høyde, ikke av NaN", () => {
+        const tied = [
+            peak({ id: "lav", elevation: 1800, isolation: -1 }),
+            peak({ id: "høy", elevation: 2200, isolation: -1 }),
+        ];
+        expect(sortPeaks(tied, "isolation").map(p => p.id)).toEqual(["høy", "lav"]);
     });
 
     test("lar den opprinnelige lista være urørt", () => {
